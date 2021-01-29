@@ -8,6 +8,8 @@ import numpy as np
 from scipy.fftpack import dct, idct
 import matplotlib.pylab as plt
 import tkinter
+import math
+from zigzag import *
 path = "../images/cat.png"
 #wave = sys.argv[2] # eg : haar, mexh
 #threshold = int(sys.argv[1])  # a number 
@@ -29,18 +31,97 @@ def idct2(a):
 # for i in range(3):   # i=0->R ; i=1->G ; i=2->B
 #     img[:,:,i] = wavelet(img[:,:,i])
 # # loader.show_image(img)
+
+
+
+# def DCT(img2d):
+#     img = dct2(img2d) # dct
+#     h1=len(img)
+#     w1=len(img[0])
+#     new_img = C
+
+#     for i in range(h1): 
+#         for j in range(w1): 
+#             new_img[i][j]= round(img[i][j]/QUANTIZATION_MAT[i%8][j%8])
+#     print(new_img)
+#     truncated_img = trun.truncate(new_img, 0)  # approximate part
+
+#     for i in range(h1): 
+#         for j in range(w1): 
+#             truncated_img[i][j]= truncated_img[i][j]*QUANTIZATION_MAT[i%8][j%8]
+#     print(truncated_img)
+#     imgr2d = idct2(truncated_img) # idct to reconstruct the numpy array
+#     h,w = imgr2d.shape
+#     return imgr2d[:h,:] 
+
 def DCT(img2d):
-    img = dct2(img2d) # dct
-    maxval = max(img.min(), img.max(), key=abs)
-    normimg = np.divide(img, maxval)
-    print(maxval)
-    cmap.graph(img)  # to  visualize any 2d array
-    normimg = trun.truncate(normimg, 0.0005)  # approximate part
-    finalimg = normimg*maxval
-    print(np.matrix(finalimg))
-    imgr2d = idct2(finalimg) # idct to reconstruct the numpy array
+    block_size = 8
+    h1=len(img2d)
+    w1=len(img2d[0])
+    height = h1
+    width = w1
+
+    nbh = math.ceil(h1/block_size)
+
+    nbw = math.ceil(w1/block_size)
+    # height of padded image
+    H =  block_size * nbh
+
+    # width of padded image
+    W =  block_size * nbw
+
+    # create a numpy zero matrix with size of H,W
+    padded_img = np.zeros((H,W))
+    padded_img[0:height,0:width] = img2d[0:height,0:width]
+
+
+
+    for i in range(nbh):
+        
+        # Compute start and end row index of the block
+        row_ind_1 = i*block_size                
+        row_ind_2 = row_ind_1+block_size
+        
+        for j in range(nbw):
+            
+            # Compute start & end column index of the block
+            col_ind_1 = j*block_size                       
+            col_ind_2 = col_ind_1+block_size
+                        
+            block = padded_img[ row_ind_1 : row_ind_2 , col_ind_1 : col_ind_2 ]
+                    
+            # apply 2D discrete cosine transform to the selected block                       
+            DCT_matrix = dct2(block)            
+            DCT_normalized = np.round(np.divide(DCT_matrix,QUANTIZATION_MAT))
+
+            truncated_img8 = trun.truncate(DCT_normalized, 0)  # approximate part
+            DCT_normalized8 = np.multiply(truncated_img8,QUANTIZATION_MAT)
+            IDCT_normalized = idct2(DCT_normalized8)
+
+            # reorder DCT coefficients in zig zag order by calling zigzag function
+            # it will give you a one dimentional array
+            reordered = zigzag(IDCT_normalized)
+
+            # reshape the reorderd array back to (block size by block size) (here: 8-by-8)
+            reshaped= np.reshape(reordered, (block_size, block_size)) 
+            
+            # copy reshaped matrix into padded_img on current block corresponding indices
+            padded_img[row_ind_1 : row_ind_2 , col_ind_1 : col_ind_2] = reshaped                        
+
+    idct_truncated = np.zeros((h1,w1))
+    for i in range(h1): 
+        for j in range(w1): 
+            idct_truncated[i][j]= padded_img[i][j]
+    
+
+    print(idct_truncated)
+
+    imgr2d = idct2(idct_truncated) # idct to reconstruct the numpy array
     h,w = imgr2d.shape
     return imgr2d[:h,:] 
+
+
+
 
 # imF = dct2(img)
 # im1 = idct2(imF)
