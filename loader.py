@@ -10,7 +10,7 @@ def load_image(path) :
     try:
         img = np.array(Image.open(path))  
     except IOError:
-        print(IOError)
+        print(path)
         img = 0
     return img
 
