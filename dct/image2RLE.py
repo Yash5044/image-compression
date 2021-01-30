@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+from PIL import Image
 
 # import zigzag functions
 from zigzag import *
@@ -30,14 +31,15 @@ block_size = 8
 QUANTIZATION_MAT = np.array([[16,11,10,16,24,40,51,61],[12,12,14,19,26,58,60,55],[14,13,16,24,40,57,69,56 ],[14,17,22,29,51,87,80,62],[18,22,37,56,68,109,103,77],[24,35,55,64,81,104,113,92],[49,64,78,87,103,121,120,101],[72,92,95,98,112,100,103,99]])
 
 # reading image in grayscale style
-img = cv2.imread('puppy.jpg', cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('l.png', cv2.IMREAD_GRAYSCALE)
+# img = np.array(Image.open('b.png')) 
 
 #You can try with this matrix to understand working of DCT
 #img = np.array([[255,255,227,204,204,203,192,217],[215,189,167,166,160,135,167,244],[169,115,99,99,99,82,127,220],[146,90,86,88,84,63,195,189],[255,255,231,239,240,182,251,232],[255,255,21,245,226,169,229,247],[255,255,222,251,174,209,174,163],[255,255,221,184,205,248,249,220]])
 
 
 # get size of the image
-[h , w] = img.shape
+h , w = img.shape
 
 
 
@@ -76,7 +78,7 @@ padded_img = np.zeros((H,W))
 # or this other way here
 padded_img[0:height,0:width] = img[0:height,0:width]
 
-cv2.imwrite('uncompressed.bmp', np.uint8(padded_img))
+cv2.imwrite('uncompressed_b.png', np.uint8(padded_img))
 
 
 
@@ -103,7 +105,18 @@ for i in range(nbh):
             # apply 2D discrete cosine transform to the selected block                       
             DCT = cv2.dct(block)            
 
-            DCT_normalized = np.divide(DCT,QUANTIZATION_MAT).astype(int)            
+
+            DCT_normalized = np.divide(DCT,QUANTIZATION_MAT).astype(int)       
+
+            #removing threshold elements
+            threshold=0.05
+            block1=np.abs(DCT_normalized)
+            maxelement = block1.max()
+            DCT_normalized=DCT_normalized/maxelement
+            val1 = DCT_normalized < threshold
+            val2 = DCT_normalized > -threshold
+            DCT_normalized[val1&val2] = 0  # all the numbers b/w (-threshold, threshold) are set to 0
+            DCT_normalized=DCT_normalized*maxelement     
             
             # reorder DCT coefficients in zig zag order by calling zigzag function
             # it will give you a one dimentional array

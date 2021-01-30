@@ -79,6 +79,6 @@ padded_img[padded_img > 255] = 255
 padded_img[padded_img < 0] = 0
 
 # compressed image is written into compressed_image.mp file
-cv2.imwrite("compressed_image.bmp",np.uint8(padded_img))
+cv2.imwrite("lenna-dct-5.png",np.uint8(padded_img))
 
 # DONE!
