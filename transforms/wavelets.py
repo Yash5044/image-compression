@@ -21,17 +21,17 @@ def wavelet(img2d):
     wH = trun.truncate(wH, threshold, mval)  # horizontally detailed part
     wV = trun.truncate(wV, threshold, mval)  # vertically detailed part
     wD = trun.truncate(wD, threshold, mval)  # diagonally detailed part
-    cmap.graph(wV)
+    # cmap.graph(wV)
     imgr2d = pywt.idwt2((wA, (wH, wV, wD)), wave) # idwt to reconstruct the numpy array
     h,w = imgr2d.shape
     return imgr2d[:h-1,:] 
 
 def main():
     img = loader.load_image(path)[:,:,0]
-    # loader.show_image(img)
+    loader.show_image(img)
     # for i in range(3):   # i=0->R ; i=1->G ; i=2->B
     img = wavelet(img)
-    # loader.show_image(img)
+    loader.show_image(img)
 
 
 if __name__ == "__main__":
