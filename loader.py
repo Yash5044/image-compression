@@ -15,7 +15,7 @@ def load_image(path) :
     return img
 
 # enter the channels [R, G, B] to get respective channel images    
-def show_image(img, channel = 0):
+def show_image(img,  path = '', channel = 0):
     if channel == 'R':
         img[:,:,1] *= 0
         img[:,:,2] *= 0
@@ -25,7 +25,9 @@ def show_image(img, channel = 0):
     elif channel == 'B':
         img[:,:,1] *= 0
         img[:,:,0] *= 0
-    img = Image.fromarray(img)
+    img = Image.fromarray(img*255)
+    if len(path)!=0 :
+        img.save(path, format = 'png')
     img.show()
 
     
