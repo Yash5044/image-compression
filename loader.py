@@ -25,7 +25,7 @@ def show_image(img,  path = '', channel = 0):
     elif channel == 'B':
         img[:,:,1] *= 0
         img[:,:,0] *= 0
-    img = Image.fromarray(img*255)
+    img = Image.fromarray(img)
     if len(path)!=0 :
         img.save(path, format = 'png')
     img.show()
